@@ -2,7 +2,10 @@
 <script src="./node_modules/mermaid/dist/mermaidAPI.min.js"></script>
 <script src="./node_modules/marked/marked.min.js"></script>
 
-<link rel="stylesheet" href="./node_modules/github-markdown-css/github-markdown.css" />
+<!-- <link rel="stylesheet" type="text/css" href="node_modules/github&#45;markdown&#45;css/github&#45;markdown.css" /> -->
+<!-- <link rel="stylesheet" type="text/css" href="/Users/andreas.thoelke/.vim/plugged/nyaovim&#45;markdown&#45;preview/nyaovim&#45;plugin/node_modules/github&#45;markdown&#45;css/github&#45;markdown.css" /> -->
+<!-- <link rel="stylesheet" href="github&#45;markdown.css" /> -->
+
 <link rel="stylesheet" href="./node_modules/highlightjs/styles/github.css" />
 <link rel="stylesheet" href="./node_modules/mermaid/dist/mermaid.css" />
 
@@ -12,19 +15,30 @@
       :host {
         width: auto;
         height: auto;
-        max-width: 980px;
+        max-width: 1080px;
+        overflow: auto;
+      }
+      #markdown-scroll-parent {
+        height: 1050px;
+          /* can set width in dev tools and then reopen. 
+             it eats from the editor area up to max width */
+        width: 600px;
+        /* max-width: 500px; */
         overflow: auto;
       }
       #markdown-root {
         width: 100%;
         height: 100%;
+        font-size=7
         box-sizing: border-box;
         margin: 0 auto;
-        padding: 25px;
+        padding: 10px;
       }
     </style>
 
-    <div id="markdown-root" class="markdown-body">
+    <div id="markdown-scroll-parent">
+      <div id="markdown-root" class="markdown-body">
+      </div>
     </div>
   </template>
 </dom-module>
@@ -67,9 +81,11 @@ Polymer({
   _updateContents: function(contents) {
     console.log('UOOOOO!', this, this.$);
     const root = this.$['markdown-root'];
+    const scroller = this.$['markdown-scroll-parent'];
     if (contents) {
       if (!this.visible) {
         root.style.display = '';
+        scroller.style.display = '';
         this.visible = true;
         if (this.expandWidth || this.expandHeight) {
           const s = ThisWindow.getSize();
@@ -86,6 +102,7 @@ Polymer({
     } else {
       if (this.visible) {
         root.style.display = 'none';
+        scroller.style.display = 'none';
         this.visible = false;
         root.textContent = '';
         if (this.expandWidth || this.expandHeight) {
@@ -104,13 +121,14 @@ Polymer({
   },
 
   _scroll: function(direction) {
-    const scroller = this.$['markdown-root'].parentElement;
+    // const scroller = this.$['markdown-root'].parentElement
+    const scroller = this.$['markdown-scroll-parent']
     switch (direction) {
       case 'up':
-        scroller.scrollTop -= 16 * 3;  // Font height * 3
+        scroller.scrollTop -= 11 * 5;
         break;
       case 'down':
-        scroller.scrollTop += 16 * 3;  // Font height * 3
+        scroller.scrollTop += 11 * 5;
         break;
       case 'top':
         scroller.scrollTop = 0;
@@ -121,12 +139,17 @@ Polymer({
       default:
         break;
     }
+    // console.log( "val: " + scroller.scrollTop)
   },
 
   ready: function() {
     const root = this.$['markdown-root'];
     root.style.display = 'none';
     this.visible = false;
+
+    const scroller = this.$['markdown-scroll-parent']
+    scroller.scrollTop = 0
+    scroller.style.display = 'none';
 
     const c = this.editor.getClient();
     this.notification_listener = c.on('notification', (method, args) => {
@@ -136,7 +159,6 @@ Polymer({
           break;
         }
         case 'markdown-preview:scroll': {
-          console.log( 'markdown-preview:scroll', args[0]);
           this._scroll(args[0]);
           break;
         }
