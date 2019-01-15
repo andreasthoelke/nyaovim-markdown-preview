@@ -5,6 +5,7 @@ function! markdown_preview#start() abort
         let trigger = 'TextChanged'
     endif
 
+    " Set up an autocommand that passes the buffer text into the plugin
     augroup plugin-mdprev-watcher
         autocmd!
         execute 'autocmd' trigger "<buffer> call rpcnotify(0, 'markdown-preview:update', join(getline(1, '$'), \"\\n\"))"
@@ -14,6 +15,7 @@ function! markdown_preview#start() abort
     augroup END
     call rpcnotify(0, 'markdown-preview:update', join(getline(1, '$'), "\n"))
 endfunction
+
 
 function! markdown_preview#stop() abort
     silent! autocmd! plugin-mdprev-watcher

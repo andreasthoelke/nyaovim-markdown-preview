@@ -50,8 +50,9 @@ mermaidAPI.initialize({
   startOnLoad:false
 });
 
+// Set config of the marked lib
 marked.setOptions({
-  sanitize: true,
+  // sanitize: true,
   highlight: function(code, lang) {
     if (lang === undefined) {
       return code;
@@ -69,6 +70,34 @@ marked.setOptions({
 
 const ThisWindow = require('electron').remote.getCurrentWindow();
 
+
+function tagContent (mdSource) {
+  const mdLines = mdSource.split('\n');
+  const linesCnt = mdLines.length - 1
+  let inCodeBlock = false
+
+  for (var lineNum = linesCnt; lineNum > 0; lineNum --) {
+    if (mdLines[lineNum].includes("```")) {
+      inCodeBlock = !inCodeBlock
+    } else if (inCodeBlock) {
+      // Skip code blocks
+    } else if (mdLines[lineNum].trim() === "") {
+      // Skip empty lines
+    } else {
+      const anchorHtml = '<a id="scrollAnchor' + linesCnt + '"></a>'
+      // From the end of the source file, insert an indexed anchor to the list, for every source line
+      mdLines.splice(lineNum, 0, anchorHtml);
+    }
+
+  }
+  // mdLines example: ["v1.0.3", "<a id="scrollAnchorId1"></a>", "* markbar config, hyperlink docs", "<a id="scrollAnchorId2"></a>", "* Tagbar setting", "<a id="scrollAnchorId3"></a>",
+  return mdLines.join('\n');
+}
+
+function scrollToLine (lineNum) {
+  const anchorId = 'scrollAnchor' + lineNum
+}
+
 Polymer({
   is: 'markdown-preview',
 
@@ -78,11 +107,14 @@ Polymer({
     editor: Object
   },
 
+  // This receives the buffertext/ markdown source
   _updateContents: function(contents) {
-    console.log('UOOOOO!', this, this.$);
+    // console.log('UOOOOO!', this, this.$);
     const root = this.$['markdown-root'];
     const scroller = this.$['markdown-scroll-parent'];
     if (contents) {
+
+      // Open markbar first if it hasn't been open
       if (!this.visible) {
         root.style.display = '';
         scroller.style.display = '';
@@ -98,8 +130,17 @@ Polymer({
           ThisWindow.setSize(s[0], s[1]);
         }
       }
-      root.innerHTML = marked(contents);
+      // Open markbar first if it hasn't been open
+
+      // set innerHTML with the html output of 'marked' call
+      // root.innerHTML = marked(contents);
+
+      const taggedContents = tagContent( contents );
+      root.innerHTML = marked(taggedContents);
+
     } else {
+
+      // Close markdown-preview: Sending an empty string makes the markbar collapse/close
       if (this.visible) {
         root.style.display = 'none';
         scroller.style.display = 'none';
@@ -160,6 +201,10 @@ Polymer({
         }
         case 'markdown-preview:scroll': {
           this._scroll(args[0]);
+          break;
+        }
+        case 'markdown-preview:scrollIntoView': {
+          scrollToLine(args[0]);
           break;
         }
         default:
