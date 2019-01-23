@@ -84,13 +84,13 @@ function tagContent (mdSource) {
     } else if (mdLines[lineNum].trim() === "") {
       // Skip empty lines
     } else {
-      const anchorHtml = '<a id="scrollAnchor' + linesCnt + '"></a>'
+      const anchorHtml = '<a id="scrollAnchor' + lineNum + '"></a>'
       // From the end of the source file, insert an indexed anchor to the list, for every source line
       mdLines.splice(lineNum, 0, anchorHtml);
     }
 
   }
-  // mdLines example: ["v1.0.3", "<a id="scrollAnchorId1"></a>", "* markbar config, hyperlink docs", "<a id="scrollAnchorId2"></a>", "* Tagbar setting", "<a id="scrollAnchorId3"></a>",
+  // mdLines example: ["v1.0.3", "<a id="scrollAnchor1"></a>", "* markbar config, hyperlink docs", "<a id="scrollAnchor2"></a>", "* Tagbar setting", "<a id="scrollAnchorId3"></a>",
   return mdLines.join('\n');
 }
 
@@ -109,7 +109,7 @@ Polymer({
 
   // This receives the buffertext/ markdown source
   _updateContents: function(contents) {
-    // console.log('UOOOOO!', this, this.$);
+    console.log('UOOOOO!', this, this.$);
     const root = this.$['markdown-root'];
     const scroller = this.$['markdown-scroll-parent'];
     if (contents) {
@@ -203,8 +203,32 @@ Polymer({
           this._scroll(args[0]);
           break;
         }
-        case 'markdown-preview:scrollIntoView': {
-          scrollToLine(args[0]);
+        case 'markdown-preview:scrollToLine': {
+          // console.log( root );
+          // console.log( root.children[33] );
+          // console.log( root.childNodes[33] );
+          // console.log( root.childNodes.item("email") );
+          // console.log( this.$$('#email') );
+          const anch = this.$$('#scrollAnchor' + args[0])
+          console.log( anch );
+          if (anch) {
+            anch.scrollIntoView();
+          }
+          // this.$$('#scrollAnchor850').scrollIntoView();
+          // this.$$('#scrollAnchor' + args[0]).scrollIntoView();
+          // console.log( this.$["email"] );
+          // console.log( Polymer.dom(this.root) );
+          // console.log( this.shadowRoot.querySelector( '#scrollAnchor850' ) );
+          // console.log( this.$['scrollAnchor' + args[0] ] );
+          // this.$['markdown-root'].children[33].scrollIntoView();
+          // console.log( this.$['markdown-root'].shadowRoot )
+          // document.getElementById('scrollAnchor30').scrollIntoView();
+          // console.log( this.$['markdown-root'].children[33] );
+          // console.log( this.$['markdown-root'].getElementById('VeoNim') );
+          // console.log( this.getElementById('VeoNim') );
+          // console.log( this.$['markdown-root'] );
+          // this.$['scrollAnchor30'].scrollIntoView();
+          // scrollToLine(args[0]);
           break;
         }
         default:
@@ -213,6 +237,7 @@ Polymer({
     });
     c.subscribe('markdown-preview:update');
     c.subscribe('markdown-preview:scroll');
+    c.subscribe('markdown-preview:scrollToLine');
   },
 
   detached: function() {
